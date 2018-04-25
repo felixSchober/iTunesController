@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
+    <RootNamespace>Schober.Felix.ITunes.Server</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
