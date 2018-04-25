@@ -32,6 +32,8 @@ namespace Schober.Felix.ITunes.Controller
             }
         }
 
+        public int Volume => !IsActive ? 0 : _app.SoundVolume;
+
 
         /// <summary>
         /// Gets a value indicating whether this instance is active.
