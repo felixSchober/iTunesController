@@ -7,8 +7,14 @@ using System.Text;
 using iTunesLib;
 using Schober.Felix.ITunes.Controller.Model;
 
+
+
 namespace Schober.Felix.ITunes.Controller
 {
+
+    /// <summary>
+    /// A wrapper for http://www.joshkunz.com/iTunesControl/main.html
+    /// </summary>
     public class ITunesService : IDisposable
     {
         private static ITunesService _instance;
@@ -16,6 +22,15 @@ namespace Schober.Felix.ITunes.Controller
 
         public static ITunesService Instance => _instance ?? (_instance = new ITunesService());
         public bool IsMute { get; private set; }
+
+        public bool IsPlaying
+        {
+            get
+            {
+                if (!IsActive) return false;
+                return _app.PlayerState == ITPlayerState.ITPlayerStatePlaying;
+            }
+        }
 
 
         /// <summary>
@@ -46,6 +61,14 @@ namespace Schober.Felix.ITunes.Controller
             return currentTrack == null ? null : new Track(currentTrack);
         }
 
+        public bool? TogglePlayPause()
+        {
+            if (!IsActive) return null;
+
+            _app.PlayPause();
+            return IsPlaying;
+        }
+
         public void Pause()
         {
             if (!IsActive) return;
@@ -70,12 +93,36 @@ namespace Schober.Felix.ITunes.Controller
         public Track SkipTrack()
         {
             if (!IsActive) return null;
-                
+
             _app.NextTrack();
             return new Track(_app.CurrentTrack);
         }
 
+        public Track PreviousTrack()
+        {
+            if (!IsActive) return null;
 
+            _app.PreviousTrack();
+            return new Track(_app.CurrentTrack);
+        }
+
+        public int? ChangeVolume(int ammount = 5)
+        {
+            if (!IsActive) return null;
+
+            if (_app.SoundVolume + ammount < 0) _app.SoundVolume = 0;
+            else if (_app.SoundVolume + ammount > 100) _app.SoundVolume = 100;
+            else _app.SoundVolume += ammount;
+            return _app.SoundVolume;
+        }
+
+        public IEnumerable<Playlist> GetPlaylists()
+        {
+            foreach (IITPlaylist playlist in _app.LibrarySource.Playlists)
+            {
+                yield return new Playlist(playlist);
+            }
+        }
 
 
         #region IDisposable
