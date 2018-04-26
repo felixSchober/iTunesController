@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Schober.Felix.ITunes.Controller;
@@ -31,29 +32,25 @@ namespace Schober.Felix.ITunes.Server.Controllers
             }
 
             var track = ITunesService.Instance.GetCurrenTrack();
-
-            string coverPath;
+            FileStream image;
             try
             {
-                coverPath = track.GetPathToTrackArtwork();
+                image = ControllerServices.GetCoverForTrack(track);
             }
             catch (Exception e)
             {
-                Console.WriteLine("Could not get cover path for song " + track.Name);
+                Console.WriteLine("Could not get cover for track");
                 Console.WriteLine(e);
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+                return NotFound(e);
             }
 
-
-            if (string.IsNullOrWhiteSpace(coverPath))
+            if (image == null)
             {
                 return NotFound(track);
             }
 
-            var coverFormat = track.GetArtworkFileExtension();
-
-            var image = System.IO.File.OpenRead(coverPath);
-            return File(image, "image/" + coverFormat);
+            
+            return File(image, "image/" + track.GetArtworkFileExtension());
         }
     }
 }

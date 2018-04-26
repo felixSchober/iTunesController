@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Drawing;
+using System.IO;
 using iTunesLib;
+using System.Drawing.Imaging;
+
 
 namespace Schober.Felix.ITunes.Controller.Model
 {
@@ -46,16 +49,102 @@ namespace Schober.Felix.ITunes.Controller.Model
         {
             _tracklist = new List<Track>(playlist.Tracks.Count);
             _playlist = playlist;
-
-            //playlist.GetITObjectIDs(out int sourceId, out int playlistId, out int trackId,
-            //    out int databaseId);
-            //Id = playlistId;
         }
 
         public Track Play()
         {
             _playlist.PlayFirstTrack();
             return Songs > 0 ? TrackList[0] : null;
+        }
+
+        public string GetPlaylistArtwork()
+        {
+            if (Songs == 0) return "";
+            if (Songs < 4) return _tracklist[0].GetPathToTrackArtwork();
+
+            var filepath = $"{Path.GetTempPath()}playlistCollage_{GetHashCode()}.jpeg";
+
+            // test if already cached
+            if (File.Exists(filepath))
+            {
+                return filepath;
+            }
+
+            // get the first 4 files
+            Image[] covers = new Image[4];
+            int h = 0, w = 0;
+            for (int i = 0, trackCounter = 0; i < covers.Length; i++)
+            {
+                // try to get valid covers
+                string path = "";
+                while (trackCounter < Songs)
+                {
+                    try
+                    {
+                        path = TrackList[trackCounter].GetPathToTrackArtwork();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        trackCounter++;
+                        continue;
+                    }
+
+                    trackCounter++;
+                    break;
+                }
+
+                // if we could not find a cover break here and deliver the first image only
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    return _tracklist[0].GetPathToTrackArtwork();
+                }
+
+                Image cover = Image.FromFile(path);
+                h += cover.Height;
+                w += cover.Width;
+
+                covers[i] = cover;
+            }
+
+            w /= 2;
+            h /= 2;
+
+            Bitmap collage = new Bitmap(w, h);
+            Graphics g = Graphics.FromImage(collage);
+            g.Clear(Color.White);
+
+            int x = 0, y = 0;
+            foreach (var cover in covers)
+            {
+                g.DrawImage(cover, x, y, w / 2, h / 2);
+
+                // new points for next image
+                x += cover.Width;
+
+                if (x >= w)
+                {
+                    // new row
+                    x = 0;
+                    y += cover.Height;
+                }
+
+                cover.Dispose();
+            }
+            g.Dispose();
+
+            collage.Save(filepath, ImageFormat.Jpeg);
+            return filepath;
+        }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode() + TrackList.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Name + " (" + Songs + ")";
         }
     }
 }
