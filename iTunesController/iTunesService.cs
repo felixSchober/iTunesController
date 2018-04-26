@@ -166,11 +166,21 @@ namespace Schober.Felix.ITunes.Controller
             }
         }
 
-        public Playlist GetPlaylistById(int id)
+        public Playlist GetPlaylistById(int sourceId, int playlistId)
         {
             if (!IsActive) return null;
 
-            var playlist = _app.GetITObjectByID(0, id, 0, 0) as IITPlaylist;
+            IITPlaylist playlist;
+            try
+            {
+                playlist = _app.GetITObjectByID(sourceId, playlistId, 0, 0) as IITPlaylist;
+            }
+            catch (Exception e)
+            {   
+                Console.WriteLine($"Could not find playlist with source id {sourceId} and playlist id {playlistId}.");
+                Console.WriteLine(e);
+                return null;
+            }
             if (playlist != null) return new Playlist(playlist);
             return null;
         }

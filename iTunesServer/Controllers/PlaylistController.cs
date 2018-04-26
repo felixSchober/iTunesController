@@ -25,5 +25,51 @@ namespace Schober.Felix.ITunes.Server.Controllers
             var playlists = ITunesService.Instance.GetPlaylistCollectionTree();
             return Ok(playlists);
         }
+
+        [HttpGet]
+        [Route("all/list")]
+        public IActionResult GetAllList()
+        {
+            if (!ITunesService.Instance.IsActive)
+            {
+                return new StatusCodeResult((int)HttpStatusCode.ServiceUnavailable);
+            }
+
+
+            var playlists = ITunesService.Instance.GetPlaylists();
+            return Ok(playlists);
+        }
+
+        [HttpGet]
+        [Route("{sourceid}/{playlistId}")]
+        public IActionResult GetPlaylist(int sourceId, int playlistId)
+        {
+            if (!ITunesService.Instance.IsActive)
+            {
+                return new StatusCodeResult((int)HttpStatusCode.ServiceUnavailable);
+            }
+
+            var playlist = ITunesService.Instance.GetPlaylistById(sourceId, playlistId);
+
+            if (playlist == null) return NotFound(playlistId);
+            return Ok(playlist);
+        }
+
+        [HttpPost]
+        [Route("{sourceid}/{playlistId}/play")]
+        public IActionResult PlayPlaylist(int sourceId, int playlistId)
+        {
+            if (!ITunesService.Instance.IsActive)
+            {
+                return new StatusCodeResult((int)HttpStatusCode.ServiceUnavailable);
+            }
+
+            var playlist = ITunesService.Instance.GetPlaylistById(sourceId, playlistId);
+
+            if (playlist == null) return NotFound(playlistId);
+
+            var firstTrack = playlist.Play();
+            return Ok(firstTrack);
+        }
     }
 }

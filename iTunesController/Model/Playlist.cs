@@ -38,12 +38,18 @@ namespace Schober.Felix.ITunes.Controller.Model
         public int Duration => _playlist.Duration;
         public string Name => _playlist.Name;
         public int Id => _playlist.playlistID;
+        public int SourceId => _playlist.sourceID;
+
         private readonly IITPlaylist _playlist;
 
         public Playlist(IITPlaylist playlist)
         {
             _tracklist = new List<Track>(playlist.Tracks.Count);
             _playlist = playlist;
+
+            //playlist.GetITObjectIDs(out int sourceId, out int playlistId, out int trackId,
+            //    out int databaseId);
+            //Id = playlistId;
         }
 
         public Track Play()
