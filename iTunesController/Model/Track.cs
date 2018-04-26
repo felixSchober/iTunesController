@@ -9,7 +9,7 @@ namespace Schober.Felix.ITunes.Controller.Model
         public string Album { get; }
         public string Artist { get; }
         public string Name { get; }
-        public IITArtwork Artwork { get; }
+        private readonly IITArtwork _artwork;
         private IITTrack _track;
 
         internal Track(IITTrack track)
@@ -22,20 +22,20 @@ namespace Schober.Felix.ITunes.Controller.Model
             if (track.Artwork.Count > 0)
             {
                 // iTunes starts at 1(!)
-                Artwork = track.Artwork[1];
+                _artwork = track.Artwork[1];
             }
         }
 
         public string GetPathToTrackArtwork()
         {
-            if (Artwork == null) return "";
+            if (_artwork == null) return "";
 
             // itunes doesn't provide an easy way to "get" the artwork. We have to save it and then load it again to get it
             var filepath = $"{Path.GetTempPath()}{Name}_{Artist}.{GetArtworkFileExtension()}";
             Console.WriteLine("Saved Temp Artwork to " + filepath);
             try
             {
-                Artwork.SaveArtworkToFile(filepath);
+                _artwork.SaveArtworkToFile(filepath);
             }
             catch (UnauthorizedAccessException e)
             {
@@ -54,9 +54,9 @@ namespace Schober.Felix.ITunes.Controller.Model
 
         public string GetArtworkFileExtension()
         {
-            if (Artwork == null) return "";
+            if (_artwork == null) return "";
 
-            var format = Artwork.Format;
+            var format = _artwork.Format;
             switch (format)
             {
                 case ITArtworkFormat.ITArtworkFormatBMP:

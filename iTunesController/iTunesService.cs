@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using iTunesLib;
 using Schober.Felix.ITunes.Controller.Model;
+using System.Reflection;
 
 
 
@@ -18,7 +19,7 @@ namespace Schober.Felix.ITunes.Controller
     public class ITunesService : IDisposable
     {
         private static ITunesService _instance;
-        private readonly iTunesApp _app;
+        private iTunesApp _app;
 
         public static ITunesService Instance => _instance ?? (_instance = new ITunesService());
         public bool IsMute { get; private set; }
@@ -39,17 +40,39 @@ namespace Schober.Felix.ITunes.Controller
         /// Gets a value indicating whether this instance is active.
         /// </summary>
         /// <value><c>true</c> if this instance is active; otherwise, <c>false</c>.</value>
-        public bool IsActive => _app != null;
+        public bool IsActive
+        {
+            get
+            {
+                if (_app != null) return true;
+
+                // try to get process again
+                _app = GetiTunesService();
+                return _app != null;
+            }
+        }
 
 
         private ITunesService()
         {
+            _app = GetiTunesService();
+        }
+
+        private iTunesApp GetiTunesService()
+        {
+            iTunesApp app;
             // only set app if iTunes is running
             if (Process.GetProcessesByName("iTunes").Any())
             {
-                _app = new iTunesAppClass();
-                IsMute = _app.Mute;
+                app = new iTunesAppClass();
+                IsMute = app.Mute;
             }
+            else
+            {
+                app = null;
+            }
+
+            return app;
         }
 
 
@@ -118,13 +141,41 @@ namespace Schober.Felix.ITunes.Controller
             return _app.SoundVolume;
         }
 
+        public PlaylistCollection GetPlaylistCollectionTree()
+        {
+            var playlistCollection = new PlaylistCollection();
+            if (!IsActive) return playlistCollection;
+
+
+            foreach (IITPlaylist playlist in _app.LibrarySource.Playlists)
+            {
+                playlistCollection.InsertNode(playlist);
+            }
+
+            return playlistCollection;
+        }
+
         public IEnumerable<Playlist> GetPlaylists()
         {
+            if (!IsActive) yield return null;
+
+
             foreach (IITPlaylist playlist in _app.LibrarySource.Playlists)
             {
                 yield return new Playlist(playlist);
             }
         }
+
+        public Playlist GetPlaylistById(int id)
+        {
+            if (!IsActive) return null;
+
+            var playlist = _app.GetITObjectByID(0, id, 0, 0) as IITPlaylist;
+            if (playlist != null) return new Playlist(playlist);
+            return null;
+        }
+
+
 
 
         #region IDisposable

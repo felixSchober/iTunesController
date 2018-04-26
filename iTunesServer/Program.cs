@@ -1,5 +1,4 @@
-﻿using iTunesServer;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
 namespace Schober.Felix.ITunes.Server

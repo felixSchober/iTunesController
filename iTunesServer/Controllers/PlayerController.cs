@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Schober.Felix.ITunes.Controller;
-using Schober.Felix.ITunes.Controller.Model;
 using Schober.Felix.ITunes.Server.Model;
 
-namespace iTunesServer.Controllers
+namespace Schober.Felix.ITunes.Server.Controllers
 {
     [Produces("application/json")]
     [Route("api/[controller]")]
-    public class PlayerController : Controller
+    public class PlayerController : Microsoft.AspNetCore.Mvc.Controller
     {
 
         #region GET States
@@ -136,8 +130,8 @@ namespace iTunesServer.Controllers
         #region Player Controls
 
         [HttpPost]
-        [Route("next")]
-        public IActionResult NextTrack()
+        [Route("skip")]
+        public IActionResult SkipTrack()
         {
             if (!ITunesService.Instance.IsActive)
             {
