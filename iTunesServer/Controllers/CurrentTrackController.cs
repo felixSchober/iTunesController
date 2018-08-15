@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Schober.Felix.ITunes.Controller;
+using System;
 using System.IO;
 using System.Net;
-using Microsoft.AspNetCore.Mvc;
-using Schober.Felix.ITunes.Controller;
-using Schober.Felix.ITunes.Controller.Model;
 
 namespace Schober.Felix.ITunes.Server.Controllers
 {
@@ -49,7 +48,7 @@ namespace Schober.Felix.ITunes.Server.Controllers
                 return NotFound(track);
             }
 
-            
+
             return File(image, "image/" + track.GetArtworkFileExtension());
         }
     }
